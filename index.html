@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Anamnese | Em Breve</title>
+  
+  <!-- Fontes Oficiais -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- GSAP para Animação -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <style>
+    /* Variáveis da Marca - Tema Claro */
+    :root {
+      --bg-light: #FFFFFF;
+      --bg-alt: #F6F4FA;
+      --primary: #6D28C9;
+      --primary-light: #A78BFA;
+      --text-dark: #1B1030;
+      --text-muted: #5C5170;
+      --border-color: #E7E1F2;
+      --ring-color: rgba(109, 40, 201, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100dvh;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+      font-family: 'Sora', system-ui, sans-serif;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Efeito de Anéis Expansivos (Imponência) */
+    .rings-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100vw;
+      height: 100vw;
+      max-width: 1200px;
+      max-height: 1200px;
+      pointer-events: none;
+      z-index: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ring {
+      position: absolute;
+      border: 1px solid var(--ring-color);
+      border-radius: 50%;
+      opacity: 0;
+    }
+
+    /* Traço de entrada rasgando a tela */
+    .intro-line {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--primary);
+      transform-origin: left;
+      transform: scaleX(0);
+      z-index: 2;
+    }
+
+    /* Container Principal */
+    .container {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    /* Logo Group */
+    .logo-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 4vh;
+      opacity: 0;
+      transform: scale(0.9);
+    }
+
+    .logo-box {
+      position: relative;
+      width: clamp(64px, 10vw, 80px);
+      height: clamp(64px, 10vw, 80px);
+      background: var(--primary);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(109, 40, 201, 0.15);
+    }
+
+    .logo-svg {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0; left: 0;
+    }
+
+    .logo-wordmark {
+      font-size: clamp(32px, 5vw, 46px);
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      color: var(--text-dark);
+      line-height: 1;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+    }
+
+    .wordmark-inner {
+      display: inline-block;
+      transform: translateY(100%);
+    }
+
+    /* Tipografia de Conteúdo */
+    .content-wrapper {
+      max-width: 600px;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    h1 {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      line-height: 1.3;
+      color: var(--text-dark);
+    }
+
+    p {
+      font-size: clamp(14px, 2vw, 16px);
+      font-weight: 300;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    .footer {
+      position: relative;
+      z-index: 1;
+      padding: 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      opacity: 0;
+    }
+
+    .footer-url {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    .footer-by {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* Link da PHI HC */
+    .footer-by a {
+      color: var(--text-dark);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-by a:hover {
+      color: var(--primary);
+    }
+
+    .footer-by strong {
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Linha de entrada e anéis de fundo -->
+  <div class="intro-line" id="introLine"></div>
+  
+  <div class="rings-container" id="rings">
+    <!-- Gerados via JS para precisão -->
+  </div>
+
+  <!-- Conteúdo Central -->
+  <main class="container">
+    <div class="logo-wrapper" id="logoGroup">
+      <div class="logo-box" id="logoBox">
+        <!-- SVG Oficial da Marca -->
+        <svg class="logo-svg" viewBox="0 0 64 64" fill="none">
+          <path id="pulse-path" d="M13 25h9l4.5-9 6 18 5-9h13.5" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <div class="logo-wordmark"><span class="wordmark-inner" id="wordmarkInner">anamnese</span></div>
+    </div>
+
+    <div class="content-wrapper" id="textContent">
+      <h1>A evolução da prática clínica.</h1>
+      <p>Estamos preparando um sistema clínico que escuta, entende e acompanha o seu raciocínio de forma invisível.</p>
+    </div>
+  </main>
+
+  <!-- Rodapé -->
+  <footer class="footer" id="footer">
+    <div class="footer-url">anamnese.health</div>
+    <div class="footer-by">
+      by <a href="https://phihc.com" target="_blank" rel="noopener noreferrer"><strong>PHI HC</strong></a>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      
+      // 1. Criar os anéis dinamicamente
+      const ringsContainer = document.getElementById('rings');
+      for(let i = 0; i < 4; i++) {
+        let size = (i + 1) * 25; // 25%, 50%, 75%, 100%
+        let ring = document.createElement('div');
+        ring.className = 'ring';
+        ring.style.width = `${size}%`;
+        ring.style.height = `${size}%`;
+        ringsContainer.appendChild(ring);
+      }
+
+      // 2. Setup inicial SVG
+      const path = document.getElementById('pulse-path');
+      const length = path.getTotalLength();
+      gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
+      gsap.set("#logoBox", { scale: 0, opacity: 0 });
+
+      // 3. MASTER TIMELINE (A Imponência)
+      const tl = gsap.timeline();
+
+      // Fase 1: O pulso corta a tela
+      tl.to("#introLine", { scaleX: 1, duration: 0.8, ease: "expo.inOut" })
+        .to("#introLine", { scaleX: 0, transformOrigin: "right", duration: 0.4, ease: "power2.out" })
+        
+      // Fase 2: O Logo nasce do impacto
+        .to("#logoGroup", { opacity: 1, scale: 1, duration: 0.1 }, "-=0.3")
+        .to("#logoBox", { scale: 1, opacity: 1, duration: 0.8, ease: "elastic.out(1, 0.6)" }, "-=0.3")
+        .to(path, { strokeDashoffset: 0, duration: 1, ease: "power2.out" }, "-=0.6")
+        
+      // Fase 3: Ondas de impacto (Anéis expandindo no fundo branco)
+        .to(".ring", { 
+          opacity: 1, 
+          scale: 1.1, 
+          duration: 1.5, 
+          stagger: 0.15, 
+          ease: "power2.out" 
+        }, "-=0.8")
+        .to(".ring", { 
+          opacity: 0, 
+          duration: 1.5, 
+          stagger: 0.15, 
+          ease: "power2.in" 
+        }, "-=1.2")
+
+      // Fase 4: Wordmark slide-up (efeito máscara de corte)
+        .to("#wordmarkInner", { y: 0, duration: 0.8, ease: "power3.out" }, "-=1.2")
+        
+      // Fase 5: Textos sobem com suavidade
+        .to("#textContent", { opacity: 1, y: 0, duration: 1, ease: "power3.out" }, "-=0.8")
+        .to("#footer", { opacity: 1, duration: 1, ease: "power2.out" }, "-=0.6");
+
+      // 4. Animação Contínua (O sistema "Pulsando")
+      // Após a entrada, os anéis ficam a pulsar suavemente ao fundo de forma infinita
+      gsap.to(".ring", {
+        scale: 1.05,
+        opacity: 0.3,
+        duration: 4,
+        stagger: 0.5,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        delay: 2.5
+      });
+      
+      // Sutil levitação da caixa do logo para reforçar a sensação de 3D/profundidade
+      gsap.to("#logoBox", {
+        y: -6,
+        boxShadow: "0 25px 50px rgba(109, 40, 201, 0.2)",
+        duration: 3,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        delay: 2.5
+      });
+
+    });
+  </script>
+
+</body>
+</html>
